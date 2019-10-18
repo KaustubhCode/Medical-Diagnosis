@@ -5,13 +5,19 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <cmath>
+#include <time.h> 
 
 // Format checker just assumes you have Alarm.bif and Solved_Alarm.bif (your file) in current directory
 using namespace std;
 
-//Global variables
-vector<vector<string> > records;
-vector<vector<string> > fullrecords;
+//Helper functions
+
+//Returns random number between a and b where a and b are in (0,1)
+float randRange(float a, float b){
+	float num = ((float)rand())/RAND_MAX;
+	return (a + num*(b-a));
+}
 
 // Our graph consists of a list of nodes where each node is represented as follows:
 class Graph_Node{
@@ -26,49 +32,39 @@ private:
 
 public:
 	// Constructor- a node is initialised with its name and its categories
-	Graph_Node(string name,int n,vector<string> vals)
-	{
+	Graph_Node(string name,int n,vector<string> vals){
 		Node_Name=name;
 		nvalues=n;
 		values=vals;
 	}
-	string get_name()
-	{
+	string get_name(){
 		return Node_Name;
 	}
-	vector<int> get_children()
-	{
+	vector<int> get_children(){
 		return Children;
 	}
-	vector<string> get_Parents()
-	{
+	vector<string> get_Parents(){
 		return Parents;
 	}
-	vector<float> get_CPT()
-	{
+	vector<float> get_CPT(){
 		return CPT;
 	}
-	int get_nvalues()
-	{
+	int get_nvalues(){
 		return nvalues;
 	}
-	vector<string> get_values()
-	{
+	vector<string> get_values(){
 		return values;
 	}
-	void set_CPT(vector<float> new_CPT)
-	{
+	void set_CPT(vector<float> new_CPT){
 		CPT.clear();
 		CPT=new_CPT;
 	}
-	void set_Parents(vector<string> Parent_Nodes)
-	{
+	void set_Parents(vector<string> Parent_Nodes){
 		Parents.clear();
 		Parents=Parent_Nodes;
 	}
 	// add another node in a graph as a child of this node
-	int add_child(int new_child_index )
-	{
+	int add_child(int new_child_index ){
 		for(int i=0;i<Children.size();i++)
 		{
 			if(Children[i]==new_child_index){
@@ -79,8 +75,7 @@ public:
 		return 1;
 	}
 
-	void printNode()
-	{
+	void printNode(){
 		cout << "Variable Name: "<< Node_Name << endl;
 		cout << "Children:" << endl;
 		for (int i = 0; i < Children.size(); i++){
@@ -92,12 +87,42 @@ public:
 			cout << Parents[i] << " ";
 		}
 		cout << endl;
+		cout << "Categories:" << endl;
+		for (int i = 0; i < values.size(); i++){
+			cout << values[i] << " ";
+		}
+		cout << endl;
 		cout << "CPT:" << endl;
 		for (int i = 0; i < CPT.size(); i++){
 			cout << CPT[i] << " ";
 		}
 		cout << endl;
 		cout << "-------------------------------------" << endl;
+	}
+
+	void random(){
+		//Assign random CPT's
+		int n = Parents.size();
+		int m = nvalues;
+		int cpt_size = pow(2,n)*m;
+		vector<float> new_cpt(cpt_size, -1);
+ 		
+ 		for (int i = 0; i < pow(2,n); i++){
+ 			vector<float> temp;
+ 			float sum = 1;
+	 		for (int j = 0; j < m; j++){
+	 			if (j == m-1){
+	 				new_cpt[j*pow(2,n) + i] = sum;	
+	 				break;
+	 			}
+	 			float k = randRange(0,sum);
+	 			// cout << k << " ";
+	 			new_cpt[j*pow(2,n) + i] = k;
+	 			sum = sum - k;
+	 		}
+ 		}
+
+ 		CPT = new_cpt;
 	}
 };
 
@@ -108,20 +133,17 @@ class network{
 	list <Graph_Node> Pres_Graph;
 
 public:
-	int addNode(Graph_Node node)
-	{
+	int addNode(Graph_Node node){
 		Pres_Graph.push_back(node);
 		return 0;
 	}
 	
 	
-	int netSize()
-	{
+	int netSize(){
 		return Pres_Graph.size();
 	}
 	// get the index of node with a given name
-	int get_index(string val_name)
-	{
+	int get_index(string val_name){
 		list<Graph_Node>::iterator listIt;
 		int count=0;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
@@ -134,8 +156,7 @@ public:
 		return -1;
 	}
 // get the node at nth index
-	list<Graph_Node>::iterator get_nth_node(int n)
-	{
+	list<Graph_Node>::iterator get_nth_node(int n){
 		list<Graph_Node>::iterator listIt;
 		int count=0;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
@@ -148,8 +169,7 @@ public:
 		return listIt; 
 	}
 	//get the iterator of a node with a given name
-	list<Graph_Node>::iterator search_node(string val_name)
-	{
+	list<Graph_Node>::iterator search_node(string val_name){
 		list<Graph_Node>::iterator listIt;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
 		{
@@ -161,19 +181,27 @@ public:
 		return listIt;
 	}
 
-	void printNetwork()
-	{
+	void printNetwork(){
 		list<Graph_Node>::iterator listIt;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
 		{
 			listIt->printNode();
 		}
 	}
+
+	//Creates CPT randomly
+	void initialise(){
+		list<Graph_Node>::iterator listIt;
+		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
+		{
+			listIt->random();
+		}
+	}
 };
 
 network read_network()
 {
-	network Alarm;
+	network Alarm_new;
 	string line;
 	int find=0;
 	ifstream myfile("alarm.bif"); 
@@ -208,7 +236,7 @@ network read_network()
 					ss2>>temp;
 				}
 				Graph_Node new_node(name,values.size(),values);
-				int pos=Alarm.addNode(new_node);
+				int pos=Alarm_new.addNode(new_node);
 			}
 			else if(temp.compare("probability")==0)
 			{
@@ -217,13 +245,13 @@ network read_network()
 				
 				list<Graph_Node>::iterator listIt;
 				list<Graph_Node>::iterator listIt1;
-				listIt=Alarm.search_node(temp);
-				int index=Alarm.get_index(temp);
+				listIt=Alarm_new.search_node(temp);
+				int index=Alarm_new.get_index(temp);
 				ss>>temp;
 				values.clear();
 				while(temp.compare(")")!=0)
 				{
-					listIt1=Alarm.search_node(temp);
+					listIt1=Alarm_new.search_node(temp);
 					listIt1->add_child(index);
 					values.push_back(temp);
 					ss>>temp;
@@ -253,15 +281,18 @@ network read_network()
 		myfile.close();
 	}
 	
-	return Alarm;
+	return Alarm_new;
 }
+
+//Global variables
+vector<vector<string> > records;
+vector<vector<string> > fullrecords;
+network Alarm;
 
 int main()
 {
-	network Alarm;
+	srand(time(0));
 	Alarm=read_network();
-	Alarm.printNetwork();
-	
 
 	int count;
 	int values = 37; //Fixed or flexible?
@@ -303,6 +334,7 @@ int main()
 
 	cout << "Size:" << fullrecords.size() << endl;
 
+	// Printing all records
 	// for (int i = 0; i < records.size(); i++){
 	// 	for (int j = 0; j < records[i].size(); j++){
 	// 		cout << records[i][j] << " ";
@@ -312,7 +344,9 @@ int main()
 	// }
 
 	//Initialisation of network
-	// network.initialise();
+	Alarm.initialise();
+	cout << "Idhar";
+	Alarm.printNetwork();
 
 	// Run till some condition is satisfied
 	// while (condition){
