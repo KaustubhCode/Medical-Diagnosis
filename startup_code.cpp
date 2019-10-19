@@ -280,7 +280,7 @@ public:
 
 			vector<float> cptNew;
 
-			vector<vector<int> > storeCount(nVal, vector<int>(combinations));
+			vector<vector<int> > storeCount(nVal, vector<int>(combinations, 1));
 
 			for(int j=0; j<38; j++){
 				for(int k=0; k<records[j].size(); k++){
@@ -311,6 +311,7 @@ public:
 					cptNew.push_back(f);
 				}
 			}
+			listIt->set_CPT(cptNew);
 		}
 	}
 };
@@ -438,10 +439,11 @@ int main()
 			count = -1;
 			for (int i = 0; i < values;i++){
 				ss >> temp;
-				// temp = temp.substr(1,temp.length()-2);
+				temp = temp.substr(1,temp.length()-2);
 				// cout << temp << " ";
-				if (temp == "\"?\""){
+				if (temp == "?"){
 					count = i;
+					temp = Alarm.get_nth_node(i).get_values()[0];
 				}
 				rec.push_back(temp);
 			}
@@ -495,6 +497,10 @@ int main()
 	}
 	// for (auto i : string_to_idx) 
  //        cout << i.first << "   " << i.second << endl; 
+
+	// cout<<"############################################"<<endl;
+
+	// Alarm.printNetwork();
   
 	cout << string_to_idx["VentAlv"] << endl;
 	cout << Alarm.getProb(string_to_idx["VentAlv"], "Low", vector<string>{"Normal","Normal"}) << endl;
