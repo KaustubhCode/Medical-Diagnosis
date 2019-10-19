@@ -507,7 +507,7 @@ int main()
 				// cout << temp << " ";
 				if (temp == "?"){
 					count = i;
-					temp = Alarm.get_nth_node(i).get_values()[0];
+					// temp = Alarm.get_nth_node(i).get_values()[0];
 				}
 				rec.push_back(temp);
 			}
