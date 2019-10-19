@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <time.h> 
+#include <unordered_map> 
 
 // Format checker just assumes you have Alarm.bif and Solved_Alarm.bif (your file) in current directory
 using namespace std;
@@ -130,7 +131,7 @@ public:
  // The whole network represted as a list of nodes
 class network{
 
-	list <Graph_Node> Pres_Graph;
+	vector<Graph_Node> Pres_Graph;
 
 public:
 	int addNode(Graph_Node node){
@@ -143,36 +144,14 @@ public:
 		return Pres_Graph.size();
 	}
 
-	// get the index of node with a given name
-	int get_index(string val_name){
-		list<Graph_Node>::iterator listIt;
-		int count=0;
-		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
-		{
-			if(listIt->get_name().compare(val_name)==0){
-				return count;
-			}
-			count++;
-		}
-		return -1;
+	// get the node at nth index
+	Graph_Node get_nth_node(int n){
+		return Pres_Graph[n]; 
 	}
 
-	// get the node at nth index
-	list<Graph_Node>::iterator get_nth_node(int n){
-		list<Graph_Node>::iterator listIt;
-		int count=0;
-		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
-		{
-			if(count==n){
-				return listIt;
-			}
-			count++;
-		}
-		return listIt; 
-	}
 	//get the iterator of a node with a given name
-	list<Graph_Node>::iterator search_node(string val_name){
-		list<Graph_Node>::iterator listIt;
+	vector<Graph_Node>::iterator search_node(string val_name){
+		vector<Graph_Node>::iterator listIt;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
 		{
 			if(listIt->get_name().compare(val_name)==0){
@@ -184,7 +163,7 @@ public:
 	}
 
 	void printNetwork(){
-		list<Graph_Node>::iterator listIt;
+		vector<Graph_Node>::iterator listIt;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
 		{
 			listIt->printNode();
@@ -193,44 +172,69 @@ public:
 
 	//Creates CPT randomly
 	void initialise(){
-		list<Graph_Node>::iterator listIt;
+		vector<Graph_Node>::iterator listIt;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
 		{
 			listIt->random();
 		}
 	}
 
-	//Return Probability value P(X_i=val|Parents(X)) (Parent values are in unordered map {"Parent" : "Value"})
-	float getProb(int i, string val, unordered_map<string, string> parent_vals){
-		list<Graph_Node>::iterator it = get_nth_node(i);
-		vector<float> cpt = it->get_CPT();
-		vector<string> parents = it->get_Parents();
-		int n = parent_vals.size();
-		int idx = 0;
-		int base = 1;
-		for (int j = n-1; j >= 0; j++){
-			string parent_name = parents[i];
-			list<Graph_Node>::iterator temp = search_node(parent_name);
-			vector<string> temp_val = temp->get_values();
-			for (int k = 0; k < temp_val.size(); k++){
-				if (temp_val[k] == parent_vals[parent_name]){
-					idx = idx + k*base;
-				}
-			}
-			base = base * temp_val.size();
+	void printGraph(){
+		int n = Pres_Graph.size();
+		for (int i = 0; i < n; i++){
+			cout << i << ":" << Pres_Graph[i].get_name() << " ";
 		}
-
-		return cpt[idx];
 	}
+
+	//Return Probability value P(X_i=val|Parents(X)) (Assuming parent_vals is in order)
+	// float getProb(int i, string val, vector<string> parent_vals){
+	// 	list<Graph_Node>::iterator it = get_nth_node(i);
+	// 	vector<float> cpt = it->get_CPT();
+	// 	vector<string> parents = it->get_Parents();
+	// 	int n = parent_vals.size();
+	// 	int idx = 0;
+	// 	int base = 1;
+	// 	for (int j = n-1; j >= 0; j++){
+	// 		list<Graph_Node>::iterator temp = search_node(parent_vals[j]);
+	// 		vector<string> temp_val = temp->get_values();
+	// 		for (int k = 0; k < temp_val.size(); k++){
+	// 			if (temp_val[k] == parent_vals[parent_name]){
+	// 				idx = idx + k*base;
+	// 			}
+	// 		}
+	// 		base = base * temp_val.size();
+	// 	}
+
+	// 	vector<string> temp_val = it->get_values();
+	// 	for (int k = 0; k < temp_val.size(); k++){
+	// 		if (temp_val[k] == val){
+	// 			idx = idx + k*base;
+	// 		}
+	// 	}
+
+	// 	return cpt[idx];
+	// }
 
 
 	//Fill record with appropriate value
-	vector<string> fill(int i, vector<string> record){
-		// Get categories to be filled
-		// float prob = findprob(i,&record);
-		return record;
-	}
+	// vector<string> fill(int i, vector<string> record){
+	// 	vector<Graph_Node>::iterator it = get_nth_node(i);
+	// 	vector<string> possible_vals = it->get_values();
+	// 	vector<string> temp;
+	// 	for (int j = 0; j < record.size(); j++){
+	// 		if (j == i){
+	// 			continue;
+	// 		}
+	// 		temp.push_back(record[j]);
+	// 	}
+	// 	// Get categories to be filled
+	// 	// float prob = findprob(i,&record);
+	// 	return record;
+	// }
 };
+
+unordered_map<string, int> string_to_idx;
+unordered_map<int, string> idx_to_string;
 
 network read_network()
 {
@@ -251,6 +255,7 @@ network read_network()
 			
 			ss.str(line);
 			ss>>temp;
+			int count = 0;
 			
 			if(temp.compare("variable")==0)
 			{
@@ -268,6 +273,9 @@ network read_network()
 					values.push_back(temp);
 					ss2>>temp;
 				}
+				string_to_idx[name] = count;
+				idx_to_string[count] = name;
+				count++;
 				Graph_Node new_node(name,values.size(),values);
 				int pos=Alarm_new.addNode(new_node);
 			}
@@ -276,10 +284,10 @@ network read_network()
 				ss>>temp;
 				ss>>temp;
 				
-				list<Graph_Node>::iterator listIt;
-				list<Graph_Node>::iterator listIt1;
+				vector<Graph_Node>::iterator listIt;
+				vector<Graph_Node>::iterator listIt1;
 				listIt=Alarm_new.search_node(temp);
-				int index=Alarm_new.get_index(temp);
+				int index=string_to_idx[temp];
 				ss>>temp;
 				values.clear();
 				while(temp.compare(")")!=0)
@@ -389,7 +397,7 @@ int main()
 		vector<float> probs(values,0);
 		for (int i = 0; i < values; i++){
 			for (int j = 0; j < records[i].size(); j++){
-				records[i][j] = Alarm.fill(i,records[i][j]);
+				// records[i][j] = Alarm.fill(i,records[i][j]);
 			}
 		}
 
