@@ -1,0 +1,13 @@
+? Normal False Low Low Low False Normal Normal False Normal False Zero False Normal False Normal Normal Low Normal Normal Low False False Normal False Normal Normal Normal Normal Normal Normal Normal Normal Normal Normal Normal 
+True ? False Low Low Low False Normal Normal False Normal True High True Normal False High High Low Normal High Low False False Normal False Normal High Low Normal Low Zero Zero High Zero Zero Normal 
+False Normal ? Normal Normal Normal False Normal Normal False Normal False Normal False Normal False Normal Normal Low Normal Normal High False False Normal False Normal Normal Normal Normal Normal Normal Normal Normal Normal Normal Normal 
+True Low False ? Low Low False Normal Normal False Normal False Normal False High False High Low Normal Low High High False False Normal False Normal High Normal Normal Normal Normal Normal Normal Normal Normal Normal 
+True Low False Low ? Low False Normal Normal False Normal False Normal False Normal False Normal Normal Low Low Normal Low False False Normal False Normal Normal Normal Normal Normal Normal Normal Normal Normal Normal Normal 
+True Low False Low Low ? False Normal Normal False Normal False Normal False Normal False Normal Normal Low Low Normal Normal False False Normal False Normal Normal Normal Normal Normal Normal Normal Normal Normal Normal Normal 
+False Normal False Normal Normal Normal ? Normal Normal True Zero False Zero False High False High High Normal High High High False False Normal True Normal High Low High Low Zero Zero High Zero Zero Normal 
+False Normal True High High High True ? Normal False Normal False Normal False High True High High Low Normal High Low False False Normal False Normal High Normal Normal Normal Normal Normal Normal Normal Normal Normal 
+True Low False Low Low Low False Normal ? False Normal True High False High False High High Low Low High Low False False Normal False Normal High Low Normal Low Zero High High Low Low Normal 
+False Normal False Normal Normal Normal False Normal Normal ? Normal False Normal False High False High High High High High High False False Normal False Low High Low Normal Low Low High High Low Low Normal 
+After P(X|others): 0
+0.00000:True After P(X|others): 0
+0.00000:False 
