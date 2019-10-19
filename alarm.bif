@@ -251,10 +251,10 @@ probability (  "MinVol"  "VentLung"  "Intubation" ) { //3 variable(s) and 48 val
 probability (  "ExpCO2"  "ArtCO2"  "VentLung" ) { //3 variable(s) and 48 values
 	table -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ;
 }
-probability (  "ArtCO2"  "VentAlv" ) { //2 variable(s) and 12 values
+probability (  "ArtCO2"  "VentAlv" ) { //3 variable(s) and 12 values
 	table -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ;
 }
-probability (  "VentAlv"  "Intubation"  "VentLung" ) { //3 variable(s) and 48 values
+probability (  "VentAlv"  "Intubation"  "VentLung" ) { //4 variable(s) and 48 values
 	table -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ;
 }
 probability (  "VentLung"  "KinkedTube"  "VentTube"  "Intubation" ) { //4 variable(s) and 96 values
