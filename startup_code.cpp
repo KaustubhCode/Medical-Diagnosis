@@ -191,7 +191,6 @@ public:
 	//Return Probability value P(X_i=val|Parents(X)) (Assuming parent_vals is in order)
 	float getProb(int i, string val, vector<string> parent_vals){
 		Graph_Node it = get_nth_node(i);
-		cout << it.get_name() << endl;
 		vector<float> cpt = it.get_CPT();
 		vector<string> parents = it.get_Parents();
 		int n = parent_vals.size();
@@ -218,20 +217,67 @@ public:
 		return cpt[idx];
 	}
 
+	float markovBlanket(int i, string val, vector<string> record){
+		Graph_Node it = get_nth_node(i);
+		string name = it.get_name();
+		vector<string> parents = it.get_Parents();
+		vector<int> children = it.get_children();
+
+		int ans = 1;
+		vector<string> temp_values(parents.size(),"");
+
+		for (int j = 0; j < parents.size(); j++){
+			temp_values[j] = record[string_to_idx[parents[j]]];
+		}
+
+		ans = ans * getProb(i, val, temp_values); 
+
+		cout << "After P(X|others): " << ans << endl; 
+
+		for (int j = 0; j < children.size(); j++){
+			Graph_Node child_node = get_nth_node(children[j]);
+			vector<string> parents_of_child = child_node.get_Parents();
+			vector<string> temp_values(parents_of_child.size(),"");
+			for (int k = 0; k < parents_of_child.size(); k++){
+				if (parents_of_child[k] == val){
+					temp_values[k] = val;
+					continue;
+				}
+				temp_values[k] = record[string_to_idx[parents_of_child[k]]];
+			}
+			ans = ans * getProb(children[j], record[children[j]], temp_values);
+		}
+
+		return ans;
+	}
+
 
 	//Fill record with appropriate value
 	vector<string> fill(int i, vector<string> record){
 		Graph_Node it = get_nth_node(i);
 		vector<string> possible_vals = it.get_values();
-		vector<string> temp;
-		for (int j = 0; j < record.size(); j++){
-			if (j == i){
-				continue;
-			}
-			temp.push_back(record[j]);
+		vector<float> prob_values(possible_vals.size(), -1);
+		vector<float> cumu_values(possible_vals.size(), -1);
+		int sum = 0;
+		for (int i = 0; i<possible_vals.size(); i++){
+			prob_values[i] = markovBlanket(i,possible_vals[i],record);
+			cout << prob_values[i] << ":" << possible_vals[i] << " ";
+			sum = sum + prob_values[i];
+			cumu_values[i] = sum;
 		}
-		// Get categories to be filled
-		// float prob = findprob(i,&record);
+
+		for (int i = 0; i<possible_vals.size(); i++){
+			prob_values[i] = prob_values[i]/sum;
+			cumu_values[i] = cumu_values[i]/sum;
+		}
+		cout << endl;
+
+		float roll_die = randRange(0,1);
+		int k = 0;
+		while (roll_die <= cumu_values[k]){
+			k++;
+		}
+		record[i] = possible_vals[k-1];
 		return record;
 	}
 
@@ -472,29 +518,37 @@ int main()
 
 	//Initialisation of network
 	Alarm.initialise();
-	Alarm.printNetwork();
+	// Alarm.printNetwork();
 	// Alarm.printGraph();
+
+	for (int j = 0; j < records[0][0].size(); j++){
+		cout << records[0][0][j] << " ";
+	}
+	cout << endl;
+
+	records[0][0] = Alarm.fill(0,records[0][0]);
+
 
 	int max_iter = 1;
 	int iter = 0;
 	// Run till some condition is satisfied
-	while (iter != max_iter){
-		//E-step
-		//Inference of each variable
-		vector<float> probs(values,0);
-		for (int i = 0; i < values; i++){
-			for (int j = 0; j < records[i].size(); j++){
-				// records[i][j] = Alarm.fill(i,records[i][j]);
-			}
-		}
+	// while (iter != max_iter){
+	// 	//E-step
+	// 	//Inference of each variable
+	// 	vector<float> probs(values,0);
+	// 	for (int i = 0; i < values; i++){
+	// 		for (int j = 0; j < records[i].size(); j++){
+	// 			records[i][j] = Alarm.fill(i,records[i][j]);
+	// 		}
+	// 	}
 
-		//M-step
-		//Use counting to get actual prob values
-		Alarm.updateCPT(records);
+	// 	//M-step
+	// 	//Use counting to get actual prob values
+	// 	// Alarm.updateCPT(records);
 
-		iter++;
+	// 	iter++;
 
-	}
+	// }
 	// for (auto i : string_to_idx) 
  //        cout << i.first << "   " << i.second << endl; 
 
@@ -502,8 +556,8 @@ int main()
 
 	// Alarm.printNetwork();
   
-	cout << string_to_idx["VentAlv"] << endl;
-	cout << Alarm.getProb(string_to_idx["VentAlv"], "Low", vector<string>{"Normal","Normal"}) << endl;
+	// cout << string_to_idx["VentAlv"] << endl;
+	// cout << Alarm.getProb(string_to_idx["VentAlv"], "Low", vector<string>{"Normal","Normal"}) << endl;
 }
 
 
