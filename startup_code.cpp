@@ -489,7 +489,6 @@ int main()
 				// cout << temp << " ";
 				if (temp == "?"){
 					count = i;
-					temp = Alarm.get_nth_node(i).get_values()[0];
 				}
 				rec.push_back(temp);
 			}
@@ -524,7 +523,6 @@ int main()
 	for (int j = 0; j < records[0][0].size(); j++){
 		cout << records[0][0][j] << " ";
 	}
-	cout << endl;
 
 	records[0][0] = Alarm.fill(0,records[0][0]);
 
