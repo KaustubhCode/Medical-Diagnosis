@@ -329,6 +329,7 @@ int main()
 
 	int count;
 	string temp;
+
 	//Reading records.dat
 	ifstream myfile("records.dat");
 
@@ -343,9 +344,9 @@ int main()
 			count = -1;
 			for (int i = 0; i < values;i++){
 				ss >> temp;
-				temp = temp.substr(1,temp.length()-2);
+				// temp = temp.substr(1,temp.length()-2);
 				// cout << temp << " ";
-				if (temp == "?"){
+				if (temp == "\"?\""){
 					count = i;
 				}
 				rec.push_back(temp);
