@@ -200,21 +200,24 @@ public:
 		}
 	}
 
-	//Return Probability value P(X_i=val|Parents(X)) (Assuming, parent values are given in order)
-	float getProb(int i, string val, vector<string> parent_vals){
+	//Return Probability value P(X_i=val|Parents(X)) (Parent values are in unordered map {"Parent" : "Value"})
+	float getProb(int i, string val, unordered_map<string, string> parent_vals){
 		list<Graph_Node>::iterator it = get_nth_node(i);
 		vector<float> cpt = it->get_CPT();
 		vector<string> parents = it->get_Parents();
-		int idx = 0;
 		int n = parent_vals.size();
+		int idx = 0;
+		int base = 1;
 		for (int j = n-1; j >= 0; j++){
-			list<Graph_Node>::iterator temp = search_node(parents[i]);
+			string parent_name = parents[i];
+			list<Graph_Node>::iterator temp = search_node(parent_name);
 			vector<string> temp_val = temp->get_values();
 			for (int k = 0; k < temp_val.size(); k++){
-				if (temp_val[k] == parent_vals[j]){
-					idx = idx + k*pow(temp_val.size(),n-j-1);
+				if (temp_val[k] == parent_vals[parent_name]){
+					idx = idx + k*base;
 				}
 			}
+			base = base * temp_val.size();
 		}
 
 		return cpt[idx];
@@ -389,7 +392,6 @@ int main()
 				records[i][j] = Alarm.fill(i,records[i][j]);
 			}
 		}
-
 
 		//M-step
 		//Use counting to get actual prob values
