@@ -191,12 +191,13 @@ public:
 	//Return Probability value P(X_i=val|Parents(X)) (Assuming parent_vals is in order)
 	float getProb(int i, string val, vector<string> parent_vals){
 		Graph_Node it = get_nth_node(i);
+		cout << it.get_name() << endl;
 		vector<float> cpt = it.get_CPT();
 		vector<string> parents = it.get_Parents();
 		int n = parent_vals.size();
 		int idx = 0;
 		int base = 1;
-		for (int j = n-1; j >= 0; j++){
+		for (int j = n-1; j >= 0; j--){
 			Graph_Node temp = get_nth_node(string_to_idx[parents[j]]);
 			vector<string> temp_val = temp.get_values();
 			for (int k = 0; k < temp_val.size(); k++){
@@ -326,6 +327,7 @@ network read_network()
 	
 	if (myfile.is_open())
 	{
+		int count = 0;
 		while (! myfile.eof() )
 		{
 			stringstream ss;
@@ -333,7 +335,6 @@ network read_network()
 			
 			ss.str(line);
 			ss>>temp;
-			int count = 0;
 			
 			if(temp.compare("variable")==0)
 			{
@@ -348,9 +349,11 @@ network read_network()
 				values.clear();
 				while(temp.compare("};")!=0)
 				{
+					temp = temp.substr(1,temp.length()-2);
 					values.push_back(temp);
 					ss2>>temp;
 				}
+				name = name.substr(1,name.length()-2);
 				string_to_idx[name] = count;
 				idx_to_string[count] = name;
 				count++;
@@ -361,7 +364,7 @@ network read_network()
 			{
 				ss>>temp;
 				ss>>temp;
-				
+				temp = temp.substr(1,temp.length()-2);
 				vector<Graph_Node>::iterator listIt;
 				vector<Graph_Node>::iterator listIt1;
 				listIt=Alarm_new.search_node(temp);
@@ -370,6 +373,7 @@ network read_network()
 				values.clear();
 				while(temp.compare(")")!=0)
 				{
+					temp = temp.substr(1,temp.length()-2);
 					listIt1=Alarm_new.search_node(temp);
 					listIt1->add_child(index);
 					values.push_back(temp);
@@ -383,7 +387,7 @@ network read_network()
 				ss2.str(line);
 				ss2>> temp;
 				ss2>> temp;
-				
+				temp = temp.substr(1,temp.length()-2);
 				vector<float> curr_CPT;
 				string::size_type sz;
 				while(temp.compare(";")!=0)
@@ -419,6 +423,7 @@ int main()
 
 	int count;
 	string temp;
+
 	//Reading records.dat
 	ifstream myfile("records.dat");
 
@@ -433,9 +438,9 @@ int main()
 			count = -1;
 			for (int i = 0; i < values;i++){
 				ss >> temp;
-				temp = temp.substr(1,temp.length()-2);
+				// temp = temp.substr(1,temp.length()-2);
 				// cout << temp << " ";
-				if (temp == "?"){
+				if (temp == "\"?\""){
 					count = i;
 				}
 				rec.push_back(temp);
@@ -465,7 +470,7 @@ int main()
 
 	//Initialisation of network
 	Alarm.initialise();
-	// Alarm.printNetwork();
+	Alarm.printNetwork();
 	// Alarm.printGraph();
 
 	int max_iter = 1;
@@ -488,7 +493,11 @@ int main()
 		iter++;
 
 	}
-	
+	// for (auto i : string_to_idx) 
+ //        cout << i.first << "   " << i.second << endl; 
+  
+	cout << string_to_idx["VentAlv"] << endl;
+	cout << Alarm.getProb(string_to_idx["VentAlv"], "Low", vector<string>{"Normal","Normal"}) << endl;
 }
 
 
