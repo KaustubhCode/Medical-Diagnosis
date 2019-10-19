@@ -13,6 +13,7 @@
 // Format checker just assumes you have Alarm.bif and Solved_Alarm.bif (your file) in current directory
 using namespace std;
 
+//Global Variables
 unordered_map<string, int> string_to_idx;
 unordered_map<int, string> idx_to_string;
 
@@ -107,24 +108,21 @@ public:
 
 	void random(){
 		//Assign random CPT's
-		int n = Parents.size();
-		int m = nvalues;
-		int cpt_size = pow(2,n)*m;
+		int cpt_size = CPT.size();
+		int parent_combinations = CPT.size()/nvalues;
 		vector<float> new_cpt(cpt_size, -1);
  		
- 		for (int i = 0; i < pow(2,n); i++){
- 			vector<float> temp;
- 			float sum = 1;
-	 		for (int j = 0; j < m; j++){
-	 			if (j == m-1){
-	 				new_cpt[j*pow(2,n) + i] = sum;	
-	 				break;
-	 			}
-	 			float k = randRange(0,sum);
-	 			// cout << k << " ";
-	 			new_cpt[j*pow(2,n) + i] = k;
-	 			sum = sum - k;
-	 		}
+ 		for (int i = 0; i < parent_combinations; i++){
+			float sum = 1;
+			for (int j = 0; j < nvalues; j++){
+				if (j==nvalues-1){
+					new_cpt[j*parent_combinations+i] = sum;
+					break;
+				}
+				float k = randRange(0,sum);
+				new_cpt[j*parent_combinations+i] = k;
+				sum = sum-k;
+			} 			
  		}
 
  		CPT = new_cpt;
@@ -132,7 +130,7 @@ public:
 };
 
 
- // The whole network represted as a list of nodes
+ // The whole network represented as a vector of nodes
 class network{
 
 	vector<Graph_Node> Pres_Graph;
@@ -191,50 +189,50 @@ public:
 	}
 
 	//Return Probability value P(X_i=val|Parents(X)) (Assuming parent_vals is in order)
-	// float getProb(int i, string val, vector<string> parent_vals){
-	// 	list<Graph_Node>::iterator it = get_nth_node(i);
-	// 	vector<float> cpt = it->get_CPT();
-	// 	vector<string> parents = it->get_Parents();
-	// 	int n = parent_vals.size();
-	// 	int idx = 0;
-	// 	int base = 1;
-	// 	for (int j = n-1; j >= 0; j++){
-	// 		list<Graph_Node>::iterator temp = search_node(parent_vals[j]);
-	// 		vector<string> temp_val = temp->get_values();
-	// 		for (int k = 0; k < temp_val.size(); k++){
-	// 			if (temp_val[k] == parent_vals[parent_name]){
-	// 				idx = idx + k*base;
-	// 			}
-	// 		}
-	// 		base = base * temp_val.size();
-	// 	}
+	float getProb(int i, string val, vector<string> parent_vals){
+		Graph_Node it = get_nth_node(i);
+		vector<float> cpt = it.get_CPT();
+		vector<string> parents = it.get_Parents();
+		int n = parent_vals.size();
+		int idx = 0;
+		int base = 1;
+		for (int j = n-1; j >= 0; j++){
+			Graph_Node temp = get_nth_node(string_to_idx[parents[j]]);
+			vector<string> temp_val = temp.get_values();
+			for (int k = 0; k < temp_val.size(); k++){
+				if (temp_val[k] == parent_vals[j]){
+					idx = idx + k*base;
+				}
+			}
+			base = base * temp_val.size();
+		}
 
-	// 	vector<string> temp_val = it->get_values();
-	// 	for (int k = 0; k < temp_val.size(); k++){
-	// 		if (temp_val[k] == val){
-	// 			idx = idx + k*base;
-	// 		}
-	// 	}
+		vector<string> temp_val = it.get_values();
+		for (int k = 0; k < temp_val.size(); k++){
+			if (temp_val[k] == val){
+				idx = idx + k*base;
+			}
+		}
 
-	// 	return cpt[idx];
-	// }
+		return cpt[idx];
+	}
 
 
 	//Fill record with appropriate value
-	// vector<string> fill(int i, vector<string> record){
-	// 	vector<Graph_Node>::iterator it = get_nth_node(i);
-	// 	vector<string> possible_vals = it->get_values();
-	// 	vector<string> temp;
-	// 	for (int j = 0; j < record.size(); j++){
-	// 		if (j == i){
-	// 			continue;
-	// 		}
-	// 		temp.push_back(record[j]);
-	// 	}
-	// 	// Get categories to be filled
-	// 	// float prob = findprob(i,&record);
-	// 	return record;
-	// }
+	vector<string> fill(int i, vector<string> record){
+		Graph_Node it = get_nth_node(i);
+		vector<string> possible_vals = it.get_values();
+		vector<string> temp;
+		for (int j = 0; j < record.size(); j++){
+			if (j == i){
+				continue;
+			}
+			temp.push_back(record[j]);
+		}
+		// Get categories to be filled
+		// float prob = findprob(i,&record);
+		return record;
+	}
 
 	// to convert values to parents to single number to fill in cpt
 	int retVal(vector<int> Pval, vector<int> PvalSize){
@@ -315,7 +313,6 @@ public:
 		}
 	}
 };
-
 
 network read_network()
 {
@@ -415,7 +412,7 @@ network Alarm;
 
 int main()
 {
-	ios_base::sync_with_stdio(false);cin.tie(0);cout.tie(0);cout<<setprecision(5);
+	ios_base::sync_with_stdio(false);cin.tie(0);cout.tie(0);cout<< fixed << setprecision(5);
 	srand(time(0));
 	Alarm=read_network();
 	values = Alarm.netSize();
@@ -468,7 +465,8 @@ int main()
 
 	//Initialisation of network
 	Alarm.initialise();
-	Alarm.printNetwork();
+	// Alarm.printNetwork();
+	// Alarm.printGraph();
 
 	int max_iter = 1;
 	int iter = 0;
@@ -485,10 +483,10 @@ int main()
 
 		//M-step
 		//Use counting to get actual prob values
+		Alarm.updateCPT(records);
 
 		iter++;
 
-		Alarm.updateCPT(records);
 	}
 	
 }
