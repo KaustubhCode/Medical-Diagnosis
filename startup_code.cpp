@@ -142,6 +142,7 @@ public:
 	int netSize(){
 		return Pres_Graph.size();
 	}
+
 	// get the index of node with a given name
 	int get_index(string val_name){
 		list<Graph_Node>::iterator listIt;
@@ -155,7 +156,8 @@ public:
 		}
 		return -1;
 	}
-// get the node at nth index
+
+	// get the node at nth index
 	list<Graph_Node>::iterator get_nth_node(int n){
 		list<Graph_Node>::iterator listIt;
 		int count=0;
@@ -196,6 +198,34 @@ public:
 		{
 			listIt->random();
 		}
+	}
+
+	//Return Probability value P(X_i=val|Parents(X)) (Assuming, parent values are given in order)
+	float getProb(int i, string val, vector<string> parent_vals){
+		list<Graph_Node>::iterator it = get_nth_node(i);
+		vector<float> cpt = it->get_CPT();
+		vector<string> parents = it->get_Parents();
+		int idx = 0;
+		int n = parent_vals.size();
+		for (int j = n-1; j >= 0; j++){
+			list<Graph_Node>::iterator temp = search_node(parents[i]);
+			vector<string> temp_val = temp->get_values();
+			for (int k = 0; k < temp_val.size(); k++){
+				if (temp_val[k] == parent_vals[j]){
+					idx = idx + k*pow(temp_val.size(),n-j-1);
+				}
+			}
+		}
+
+		return cpt[idx];
+	}
+
+
+	//Fill record with appropriate value
+	vector<string> fill(int i, vector<string> record){
+		// Get categories to be filled
+		// float prob = findprob(i,&record);
+		return record;
 	}
 };
 
@@ -285,17 +315,19 @@ network read_network()
 }
 
 //Global variables
-vector<vector<string> > records;
-vector<vector<string> > fullrecords;
+int values = 37; //Fixed or flexible?
+vector<vector<string> > v;
+vector<vector<vector<string> > > records(values+1, v);
+// vector<vector<string> > records;
 network Alarm;
 
 int main()
 {
 	srand(time(0));
 	Alarm=read_network();
+	values = Alarm.netSize();
 
 	int count;
-	int values = 37; //Fixed or flexible?
 	string temp;
 	//Reading records.dat
 	ifstream myfile("records.dat");
@@ -308,54 +340,62 @@ int main()
 			getline (myfile,line);
 			ss.str(line);
 
-
-			count = 0;
+			count = -1;
 			for (int i = 0; i < values;i++){
 				ss >> temp;
 				temp = temp.substr(1,temp.length()-2);
 				// cout << temp << " ";
 				if (temp == "?"){
-					count++;
+					count = i;
 				}
 				rec.push_back(temp);
 			}
-
-			if (count == 1){
-				records.push_back(rec);
-			}
-			else if (count == 0){
-				fullrecords.push_back(rec);
-			}
-			else{
-				cout << "Too many missing records" << endl;
-			}
+			count = (count == -1) ? 38 : count;
+			records[count].push_back(rec);
 		}
 	}
 
-	cout << "Size:" << fullrecords.size() << endl;
+	// int sum = 0;
+	// for (int i = 0; i < 38; i++){
+	// 	cout << records[i].size() << endl;
+	// 	sum = sum + records[i].size();
+	// }	
+	// cout << sum << endl;
 
-	// Printing all records
-	// for (int i = 0; i < records.size(); i++){
-	// 	for (int j = 0; j < records[i].size(); j++){
-	// 		cout << records[i][j] << " ";
+	// // Printing all records
+	// for (int k = 0; k < 38; k++){
+	// 	for (int i = 0; i < records[k].size(); i++){
+	// 		for (int j = 0; j < records[k][i].size(); j++){
+	// 			cout << records[k][i][j] << " ";
+	// 		}
+	// 		cout << endl;
+	// 		cout << endl;
 	// 	}
-	// 	cout << endl;
-	// 	cout << endl;
 	// }
 
 	//Initialisation of network
 	Alarm.initialise();
-	cout << "Idhar";
 	Alarm.printNetwork();
 
+	int max_iter = 1;
+	int iter = 0;
 	// Run till some condition is satisfied
-	// while (condition){
+	while (iter != max_iter){
 		//E-step
-		//MCMC with gibbs sampling
+		//Inference of each variable
+		vector<float> probs(values,0);
+		for (int i = 0; i < values; i++){
+			for (int j = 0; j < records[i].size(); j++){
+				records[i][j] = Alarm.fill(i,records[i][j]);
+			}
+		}
+
 
 		//M-step
 		//Use counting to get actual prob values
-	// }
+
+		iter++;
+	}
 	
 }
 
