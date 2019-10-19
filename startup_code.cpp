@@ -192,6 +192,18 @@ public:
 	float getProb(int i, string val, vector<string> parent_vals){
 		Graph_Node it = get_nth_node(i);
 		vector<float> cpt = it.get_CPT();
+
+		if (parent_vals.size() == 0){
+			vector<string> temp_val = it.get_values();
+			for (int k = 0; k < temp_val.size(); k++){
+				if (temp_val[k] == val){
+					return cpt[k];
+				}
+			}
+			cout << "Error. No matching value found." << endl;
+		}
+
+
 		vector<string> parents = it.get_Parents();
 		int n = parent_vals.size();
 		int idx = 0;
@@ -223,16 +235,21 @@ public:
 		vector<string> parents = it.get_Parents();
 		vector<int> children = it.get_children();
 
-		int ans = 1;
+		float ans = 1;
 		vector<string> temp_values(parents.size(),"");
 
 		for (int j = 0; j < parents.size(); j++){
 			temp_values[j] = record[string_to_idx[parents[j]]];
 		}
 
+		// cout << i << " " << val << " " << parents.size() << " " << endl;
+		// for (int j = 0; j < parents.size(); j++){
+		// 	cout << parents[j] << ":" << temp_values[j] << endl;
+		// }
+
 		ans = ans * getProb(i, val, temp_values); 
 
-		cout << "After P(X|others): " << ans << endl; 
+
 
 		for (int j = 0; j < children.size(); j++){
 			Graph_Node child_node = get_nth_node(children[j]);
@@ -248,6 +265,7 @@ public:
 			ans = ans * getProb(children[j], record[children[j]], temp_values);
 		}
 
+		// cout << "Markov ans: " << ans << endl; 
 		return ans;
 	}
 
@@ -258,26 +276,26 @@ public:
 		vector<string> possible_vals = it.get_values();
 		vector<float> prob_values(possible_vals.size(), -1);
 		vector<float> cumu_values(possible_vals.size(), -1);
-		int sum = 0;
-		for (int i = 0; i<possible_vals.size(); i++){
-			prob_values[i] = markovBlanket(i,possible_vals[i],record);
-			cout << prob_values[i] << ":" << possible_vals[i] << " ";
-			sum = sum + prob_values[i];
-			cumu_values[i] = sum;
+		float sum = 0;
+		for (int j = 0; j<possible_vals.size(); j++){
+			prob_values[j] = markovBlanket(i,possible_vals[j],record);
+			// cout << prob_values[j] << ":" << possible_vals[j] << endl;
+			sum = sum + prob_values[j];
+			cumu_values[j] = sum;
 		}
 
-		for (int i = 0; i<possible_vals.size(); i++){
-			prob_values[i] = prob_values[i]/sum;
-			cumu_values[i] = cumu_values[i]/sum;
+		for (int j = 0; j<possible_vals.size(); j++){
+			prob_values[j] = prob_values[j]/sum;
+			cumu_values[j] = cumu_values[j]/sum;
+			// cout << cumu_values[j] << " ";
 		}
-		cout << endl;
 
 		float roll_die = randRange(0,1);
 		int k = 0;
-		while (roll_die <= cumu_values[k]){
+		while (roll_die > cumu_values[k]){
 			k++;
 		}
-		record[i] = possible_vals[k-1];
+		record[i] = possible_vals[k];
 		return record;
 	}
 
@@ -519,34 +537,31 @@ int main()
 	// Alarm.printNetwork();
 	// Alarm.printGraph();
 
-	for (int j = 0; j < records[0][0].size(); j++){
-		cout << records[0][0][j] << " ";
-	}
-	cout << endl;
+	// records[0][0] = Alarm.fill(0,records[0][0]);
 
-	records[0][0] = Alarm.fill(0,records[0][0]);
-
-
-	int max_iter = 1;
+	int max_iter = 3;
 	int iter = 0;
 	// Run till some condition is satisfied
-	// while (iter != max_iter){
-	// 	//E-step
-	// 	//Inference of each variable
-	// 	vector<float> probs(values,0);
-	// 	for (int i = 0; i < values; i++){
-	// 		for (int j = 0; j < records[i].size(); j++){
-	// 			records[i][j] = Alarm.fill(i,records[i][j]);
-	// 		}
-	// 	}
+	while (iter != max_iter){
+		//E-step
+		//Inference of each variable
+		vector<float> probs(values,0);
+		for (int i = 0; i < values; i++){
+			for (int j = 0; j < records[i].size(); j++){
+				records[i][j] = Alarm.fill(i,records[i][j]);
+			}
+		}
+		cout << "Done E-Step" << endl;
 
-	// 	//M-step
-	// 	//Use counting to get actual prob values
-	// 	// Alarm.updateCPT(records);
+		//M-step
+		//Use counting to get actual prob values
+		Alarm.updateCPT(records);
 
-	// 	iter++;
+		cout << "Done M-step" << endl;
 
-	// }
+		iter++;
+
+	}
 	// for (auto i : string_to_idx) 
  //        cout << i.first << "   " << i.second << endl; 
   
