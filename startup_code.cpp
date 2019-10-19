@@ -120,7 +120,7 @@ public:
 					break;
 				}
 				float k = randRange(0,sum);
-				new_cpt[j*parent_combinations+i] = 0;
+				new_cpt[j*parent_combinations+i] = k;
 				sum = sum-k;
 			} 			
  		}
@@ -275,26 +275,46 @@ public:
 		Graph_Node it = get_nth_node(i);
 		vector<string> possible_vals = it.get_values();
 		vector<float> prob_values(possible_vals.size(), -1);
-		vector<float> cumu_values(possible_vals.size(), -1);
+		
 		float sum = 0;
 		for (int j = 0; j<possible_vals.size(); j++){
 			prob_values[j] = markovBlanket(i,possible_vals[j],record);
 			// cout << prob_values[j] << ":" << possible_vals[j] << endl;
 			sum = sum + prob_values[j];
-			cumu_values[j] = sum;
+			//cumu_values[j] = sum;
 		}
-
+		float maxim = 0;
+		int k=0;
 		for (int j = 0; j<possible_vals.size(); j++){
 			prob_values[j] = prob_values[j]/sum;
-			cumu_values[j] = cumu_values[j]/sum;
+			if(prob_values[j]>maxim){
+				maxim = prob_values[j];
+				k = j;
+			}
+			//cumu_values[j] = cumu_values[j]/sum;
 			// cout << cumu_values[j] << " ";
 		}
+		
+		// vector<float> cumu_values(possible_vals.size(), -1);
+		// float sum = 0;
+		// for (int j = 0; j<possible_vals.size(); j++){
+		// 	prob_values[j] = markovBlanket(i,possible_vals[j],record);
+		// 	//cout << prob_values[j] << ":" << possible_vals[j] << endl;
+		// 	sum = sum + prob_values[j];
+		// 	cumu_values[j] = sum;
+		// }
+		// for (int j = 0; j<possible_vals.size(); j++){
+		// 	prob_values[j] = prob_values[j]/sum;
+		// 	cumu_values[j] = cumu_values[j]/sum;
+		// 	// cout << cumu_values[j] << " ";
+		// }
 
-		float roll_die = randRange(0,1);
-		int k = 0;
-		while (roll_die > cumu_values[k]){
-			k++;
-		}
+
+		// float roll_die = randRange(0,1);
+		// int k = 0;
+		// while (roll_die > cumu_values[k]){
+		// 	k++;
+		// }
 		record[i] = possible_vals[k];
 		return record;
 	}
@@ -319,8 +339,13 @@ public:
 				return i;
 		}
 
-		cout<<"WRONG"<<endl;
-		return -1;
+	}
+
+	float smoothingCoeff(int n){
+		// float f = ((sqrt((float)n)));
+		float f = 1/sqrt((float)n);
+		f = f/1000;
+		return f;
 	}
 
 	void updateCPT(vector<vector<vector<string> > > &records){
@@ -344,7 +369,7 @@ public:
 
 			vector<float> cptNew;
 
-			vector<vector<int> > storeCount(nVal, vector<int>(combinations, 1));
+			vector<vector<int> > storeCount(nVal, vector<int>(combinations, 0));
 
 			for(int j=0; j<38; j++){
 				for(int k=0; k<records[j].size(); k++){
@@ -371,7 +396,13 @@ public:
 	
 			for(int i=0; i<nVal; i++){
 				for(int j=0; j<combinations; j++){
-					float f = (float)storeCount[i][j]/(float)totalCount[j];
+					if(totalCount[j]==0)
+						totalCount[j]=1;
+					// float f = ((float)storeCount[i][j] + (10/(float)totalCount[j]))/((float)totalCount[j] + ((float)nVal*10/(float)totalCount[j]));
+					float sCoef = smoothingCoeff(totalCount[j]);
+					float f = ((float)storeCount[i][j] + sCoef)/((float)totalCount[j] + ((float)nVal*sCoef));
+					if(f<0.0001)
+						f = 0.0001;
 					cptNew.push_back(f);
 				}
 			}
@@ -528,7 +559,7 @@ int main()
 	int ct=0;
 
 	// Run till some condition is satisfied
-	while (elapsed < 115){
+	while (elapsed < 60){
 		//E-step
 		//Inference of each variable
         start = clock();

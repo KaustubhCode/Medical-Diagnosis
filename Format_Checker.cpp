@@ -213,7 +213,7 @@ void check_format()
      				{
 
                         if(!atof(test_temp.c_str()))
-                        {
+                        {   
                             cout<<" Probem in Probab values in line "<<line_count<<"\n";
                             exit(0);
      					}
