@@ -13,6 +13,9 @@
 // Format checker just assumes you have Alarm.bif and Solved_Alarm.bif (your file) in current directory
 using namespace std;
 
+unordered_map<string, int> string_to_idx;
+unordered_map<int, string> idx_to_string;
+
 //Helper functions
 
 //Returns random number between a and b where a and b are in (0,1)
@@ -233,33 +236,86 @@ public:
 	// 	return record;
 	// }
 
+	// to convert values to parents to single number to fill in cpt
+	int retVal(vector<int> Pval, vector<int> PvalSize){
+		int n = Pval.size();
+		int ret=0;
+		int base=1;
+		for(int i=n-1; i>-1; i--){
+			ret += base*Pval[i];
+			base = base * PvalSize[i];
+		}
+		return ret;
+	}
+
+	int index(string value, Graph_Node node){
+		vector<string> val = node.get_values();
+
+		for(int i=0; i<val.size(); i++){
+			if(val[i]==value)
+				return i;
+		}
+
+		cout<<"WRONG"<<endl;
+		return -1;
+	}
+
 	void updateCPT(vector<vector<vector<string> > > &records){
-		list<Graph_Node>::iterator listIt;
+		vector<Graph_Node>::iterator listIt;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
 		{
+			int nodeNum = string_to_idx[listIt->get_name()];
 			int nVal = listIt->get_nvalues();
-			vector<string> parents = listIt->get_Parents();
-			int n = parents.size();
+			vector<string> parentsT = listIt->get_Parents();
+			vector<int> parents;
+			vector<int> PvalSize;
+			int n = parentsT.size();
+			int combinations=1;
 
-			// convert parent name to index of the variable
+			for(int i=0; i<n; i++){
+				parents.push_back(string_to_idx[parentsT[i]]);
+				int temp = get_nth_node(parents[i]).get_nvalues();
+				PvalSize.push_back(temp);
+				combinations = combinations * temp;
+			}
 
 			vector<float> cptNew;
 
-			for(int i=0; i<nVal-1; i++){
-				for(int j=0; j<38; j++){
-					for(int k=0; k<records[i].size(); k++){
-						if()
-					}
+			vector<vector<int> > storeCount(nVal, vector<int>(combinations));
+
+			for(int j=0; j<38; j++){
+				for(int k=0; k<records[j].size(); k++){
+					vector<int> v;
+					int value = 0; // value number of the particular node
+					string x = records[j][k][nodeNum];
+					for(int l=0; l<n; l++){
+						string s = records[j][k][parents[l]];
+						v.push_back(index(s, get_nth_node(parents[l])));
+					}	
+					value = retVal(v, PvalSize);
+					int varVal = index(x, *listIt);
+					storeCount[varVal][value]++;
 				}
 			}
-			
 
+			vector<int> totalCount (combinations, 0);
+
+			for(int i=0; i<combinations; i++){
+				for(int j=0; j<nVal; j++){
+					totalCount[i] += storeCount[j][i];
+				}
+			}
+	
+			for(int i=0; i<nVal; i++){
+				for(int j=0; j<combinations; j++){
+					float f = (float)storeCount[i][j]/(float)totalCount[j];
+					cptNew.push_back(f);
+				}
+			}
 		}
 	}
 };
 
-unordered_map<string, int> string_to_idx;
-unordered_map<int, string> idx_to_string;
 
 network read_network()
 {
