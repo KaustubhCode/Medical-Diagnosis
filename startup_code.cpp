@@ -546,6 +546,7 @@ int main()
 		}
 	}
 
+	myfile.close();
 
 	//Initialisation of network
 	Alarm.initialise();
@@ -630,8 +631,6 @@ int main()
 			}
 		}
 	}
-
-
 }
 
 
