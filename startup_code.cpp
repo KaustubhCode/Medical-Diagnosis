@@ -516,6 +516,8 @@ int main()
 		}
 	}
 
+	myfile.close();
+
 	// int sum = 0;
 	// for (int i = 0; i < 38; i++){
 	// 	cout << records[i].size() << endl;
@@ -564,15 +566,8 @@ int main()
 		iter++;
 
 	}
-	// for (auto i : string_to_idx) 
- //        cout << i.first << "   " << i.second << endl; 
 
-	// cout<<"############################################"<<endl;
 
-	// Alarm.printNetwork();
-  
-	// cout << string_to_idx["VentAlv"] << endl;
-	// cout << Alarm.getProb(string_to_idx["VentAlv"], "Low", vector<string>{"Normal","Normal"}) << endl;
 }
 
 
