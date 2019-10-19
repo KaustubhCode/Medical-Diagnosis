@@ -386,7 +386,8 @@ int main()
 
 	//Initialisation of network
 	Alarm.initialise();
-	Alarm.printNetwork();
+	// Alarm.printNetwork();
+	Alarm.printGraph();
 
 	int max_iter = 1;
 	int iter = 0;
