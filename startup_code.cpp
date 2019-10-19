@@ -120,7 +120,7 @@ public:
 					break;
 				}
 				float k = randRange(0,sum);
-				new_cpt[j*parent_combinations+i] = k;
+				new_cpt[j*parent_combinations+i] = 0;
 				sum = sum-k;
 			} 			
  		}
@@ -481,7 +481,7 @@ network Alarm;
 
 int main()
 {
-	ios_base::sync_with_stdio(false);cin.tie(0);cout.tie(0);cout<< fixed << setprecision(5);
+	ios_base::sync_with_stdio(false);cin.tie(0);cout.tie(0);cout<< fixed << setprecision(4);
 	srand(time(0));
 	Alarm=read_network();
 	values = Alarm.netSize();
@@ -507,7 +507,6 @@ int main()
 				// cout << temp << " ";
 				if (temp == "?"){
 					count = i;
-					// temp = Alarm.get_nth_node(i).get_values()[0];
 				}
 				rec.push_back(temp);
 			}
@@ -518,56 +517,89 @@ int main()
 
 	myfile.close();
 
-	// int sum = 0;
-	// for (int i = 0; i < 38; i++){
-	// 	cout << records[i].size() << endl;
-	// 	sum = sum + records[i].size();
-	// }	
-	// cout << sum << endl;
-
-	// // Printing all records
-	// for (int k = 0; k < 38; k++){
-	// 	for (int i = 0; i < records[k].size(); i++){
-	// 		for (int j = 0; j < records[k][i].size(); j++){
-	// 			cout << records[k][i][j] << " ";
-	// 		}
-	// 		cout << endl;
-	// 		cout << endl;
-	// 	}
-	// }
-
 	//Initialisation of network
 	Alarm.initialise();
 	// Alarm.printNetwork();
 	// Alarm.printGraph();
 
-	// records[0][0] = Alarm.fill(0,records[0][0]);
+    clock_t start;
+    clock_t end;
+	float elapsed = 0;
 
-	int max_iter = 3;
-	int iter = 0;
+	int ct=0;
+
 	// Run till some condition is satisfied
-	while (iter != max_iter){
+	while (elapsed < 115){
 		//E-step
 		//Inference of each variable
+        start = clock();
 		vector<float> probs(values,0);
 		for (int i = 0; i < values; i++){
 			for (int j = 0; j < records[i].size(); j++){
 				records[i][j] = Alarm.fill(i,records[i][j]);
 			}
 		}
-		cout << "Done E-Step" << endl;
+		// cout << "Done E-Step" << endl;
 
 		//M-step
 		//Use counting to get actual prob values
 		Alarm.updateCPT(records);
 
-		cout << "Done M-step" << endl;
+		// cout << "Done M-step" << endl;
 
-		iter++;
+		end = clock();
+		start = end - start;
+        elapsed += (float)start/CLOCKS_PER_SEC;
+		ct++;
 
 	}
+	cout<<ct<<endl;
+
+	// creating solved_alarm.bif
+
+	ifstream file("alarm.bif");
+	ofstream outfile("solved_alarm.bif");
+
+	outfile<< fixed << setprecision(4);
 
 
+	if (file.is_open()){
+		int count = 0;
+		while( !file.eof()){
+			stringstream ss;
+			string line;
+			string temp;
+			vector<string> rec;
+			getline (file,line);
+			ss.str(line);
+			ss >> temp;
+
+			if (temp != "probability"){
+				// cout << temp;
+				if (count != 0){
+					outfile<<endl;
+				}
+				count++;
+				outfile << line;
+			}
+			else{
+				outfile << endl;
+				outfile << line << endl;
+				ss >> temp;
+				ss >> temp;
+				temp = temp.substr(1,temp.length()-2);
+				vector<float> cpt = Alarm.get_nth_node(string_to_idx[temp]).get_CPT();
+				outfile << "	table ";
+				for (int i = 0; i < cpt.size(); i++){
+					outfile << cpt[i] << " ";
+				}
+				outfile << ";" << endl;
+				outfile << "}";
+				getline(file,line);
+				getline(file,line);
+			}
+		}
+	}
 }
 
 
