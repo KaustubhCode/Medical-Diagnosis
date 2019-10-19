@@ -7,7 +7,8 @@
 #include <cstdlib>
 #include <cmath>
 #include <time.h> 
-#include <unordered_map> 
+#include <iomanip>
+#include <unordered_map>
 
 // Format checker just assumes you have Alarm.bif and Solved_Alarm.bif (your file) in current directory
 using namespace std;
@@ -231,6 +232,30 @@ public:
 	// 	// float prob = findprob(i,&record);
 	// 	return record;
 	// }
+
+	void updateCPT(vector<vector<vector<string> > > &records){
+		list<Graph_Node>::iterator listIt;
+		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
+		{
+			int nVal = listIt->get_nvalues();
+			vector<string> parents = listIt->get_Parents();
+			int n = parents.size();
+
+			// convert parent name to index of the variable
+
+			vector<float> cptNew;
+
+			for(int i=0; i<nVal-1; i++){
+				for(int j=0; j<38; j++){
+					for(int k=0; k<records[i].size(); k++){
+						if()
+					}
+				}
+			}
+			
+
+		}
+	}
 };
 
 unordered_map<string, int> string_to_idx;
@@ -334,6 +359,7 @@ network Alarm;
 
 int main()
 {
+	ios_base::sync_with_stdio(false);cin.tie(0);cout.tie(0);cout<<setprecision(5);
 	srand(time(0));
 	Alarm=read_network();
 	values = Alarm.netSize();
@@ -406,6 +432,8 @@ int main()
 		//Use counting to get actual prob values
 
 		iter++;
+
+		Alarm.updateCPT(records);
 	}
 	
 }
