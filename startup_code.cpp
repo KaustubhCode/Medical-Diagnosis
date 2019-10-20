@@ -20,8 +20,8 @@ unordered_map<int, string> idx_to_string;
 //Helper functions
 
 //Returns random number between a and b where a and b are in (0,1)
-float randRange(float a, float b){
-	float num = ((float)rand())/RAND_MAX;
+double randRange(double a, double b){
+	double num = ((double)rand())/RAND_MAX;
 	return (a + num*(b-a));
 }
 
@@ -34,7 +34,7 @@ private:
 	vector<string> Parents; // Parents of a particular node- note these are names of parents
 	int nvalues;  // Number of categories a variable represented by this node can take
 	vector<string> values; // Categories of possible values
-	vector<float> CPT; // conditional probability table as a 1-d array . Look for BIF format to understand its meaning
+	vector<double> CPT; // conditional probability table as a 1-d array . Look for BIF format to understand its meaning
 
 public:
 	// Constructor- a node is initialised with its name and its categories
@@ -52,7 +52,7 @@ public:
 	vector<string> get_Parents(){
 		return Parents;
 	}
-	vector<float> get_CPT(){
+	vector<double> get_CPT(){
 		return CPT;
 	}
 	int get_nvalues(){
@@ -61,7 +61,7 @@ public:
 	vector<string> get_values(){
 		return values;
 	}
-	void set_CPT(vector<float> new_CPT){
+	void set_CPT(vector<double> new_CPT){
 		CPT.clear();
 		CPT=new_CPT;
 	}
@@ -110,16 +110,16 @@ public:
 		//Assign random CPT's
 		int cpt_size = CPT.size();
 		int parent_combinations = CPT.size()/nvalues;
-		vector<float> new_cpt(cpt_size, -1);
+		vector<double> new_cpt(cpt_size, -1);
  		
  		for (int i = 0; i < parent_combinations; i++){
-			float sum = 1;
+			double sum = 1;
 			for (int j = 0; j < nvalues; j++){
 				if (j==nvalues-1){
 					new_cpt[j*parent_combinations+i] = sum;
 					break;
 				}
-				float k = randRange(0,sum);
+				double k = randRange(0,sum);
 				new_cpt[j*parent_combinations+i] = k;
 				sum = sum-k;
 			} 			
@@ -189,9 +189,9 @@ public:
 	}
 
 	//Return Probability value P(X_i=val|Parents(X)) (Assuming parent_vals is in order)
-	float getProb(int i, string val, vector<string> parent_vals){
+	double getProb(int i, string val, vector<string> parent_vals){
 		Graph_Node it = get_nth_node(i);
-		vector<float> cpt = it.get_CPT();
+		vector<double> cpt = it.get_CPT();
 
 		if (parent_vals.size() == 0){
 			vector<string> temp_val = it.get_values();
@@ -229,13 +229,13 @@ public:
 		return cpt[idx];
 	}
 
-	float markovBlanket(int i, string val, vector<string> record){
+	double markovBlanket(int i, string val, vector<string> record){
 		Graph_Node it = get_nth_node(i);
 		string name = it.get_name();
 		vector<string> parents = it.get_Parents();
 		vector<int> children = it.get_children();
 
-		float ans = 1;
+		double ans = 10000;
 		vector<string> temp_values(parents.size(),"");
 
 		for (int j = 0; j < parents.size(); j++){
@@ -274,16 +274,16 @@ public:
 	vector<string> fill(int i, vector<string> record){
 		Graph_Node it = get_nth_node(i);
 		vector<string> possible_vals = it.get_values();
-		vector<float> prob_values(possible_vals.size(), -1);
+		vector<double> prob_values(possible_vals.size(), -1);
 		
-		float sum = 0;
+		double sum = 0;
 		for (int j = 0; j<possible_vals.size(); j++){
 			prob_values[j] = markovBlanket(i,possible_vals[j],record);
 			// cout << prob_values[j] << ":" << possible_vals[j] << endl;
 			sum = sum + prob_values[j];
 			//cumu_values[j] = sum;
 		}
-		float maxim = 0;
+		double maxim = 0;
 		int k=0;
 		for (int j = 0; j<possible_vals.size(); j++){
 			prob_values[j] = prob_values[j]/sum;
@@ -295,8 +295,8 @@ public:
 			// cout << cumu_values[j] << " ";
 		}
 		
-		// vector<float> cumu_values(possible_vals.size(), -1);
-		// float sum = 0;
+		// vector<double> cumu_values(possible_vals.size(), -1);
+		// double sum = 0;
 		// for (int j = 0; j<possible_vals.size(); j++){
 		// 	prob_values[j] = markovBlanket(i,possible_vals[j],record);
 		// 	//cout << prob_values[j] << ":" << possible_vals[j] << endl;
@@ -310,7 +310,7 @@ public:
 		// }
 
 
-		// float roll_die = randRange(0,1);
+		// double roll_die = randRange(0,1);
 		// int k = 0;
 		// while (roll_die > cumu_values[k]){
 		// 	k++;
@@ -341,15 +341,16 @@ public:
 
 	}
 
-	float smoothingCoeff(int n){
-		// float f = ((sqrt((float)n)));
-		float f = 1/sqrt((float)n);
+	double smoothingCoeff(int n){
+		// double f = ((sqrt((double)n)));
+		double f = 1/sqrt((double)n);
 		f = f/1000;
 		return f;
 	}
 
-	void updateCPT(vector<vector<vector<string> > > &records){
+	double updateCPT(vector<vector<vector<string> > > &records){
 		vector<Graph_Node>::iterator listIt;
+		double abs_diff = 0;
 		for(listIt=Pres_Graph.begin();listIt!=Pres_Graph.end();listIt++)
 		{
 			int nodeNum = string_to_idx[listIt->get_name()];
@@ -367,7 +368,7 @@ public:
 				combinations = combinations * temp;
 			}
 
-			vector<float> cptNew;
+			vector<double> cptNew;
 
 			vector<vector<int> > storeCount(nVal, vector<int>(combinations, 0));
 
@@ -398,25 +399,30 @@ public:
 				for(int j=0; j<combinations; j++){
 					if(totalCount[j]==0)
 						totalCount[j]=1;
-					// float f = ((float)storeCount[i][j] + (10/(float)totalCount[j]))/((float)totalCount[j] + ((float)nVal*10/(float)totalCount[j]));
-					float sCoef = smoothingCoeff(totalCount[j]);
-					float f = ((float)storeCount[i][j] + sCoef)/((float)totalCount[j] + ((float)nVal*sCoef));
+					// double f = ((double)storeCount[i][j] + (10/(double)totalCount[j]))/((double)totalCount[j] + ((double)nVal*10/(double)totalCount[j]));
+					double sCoef = smoothingCoeff(totalCount[j]);
+					double f = ((double)storeCount[i][j] + sCoef)/((double)totalCount[j] + ((double)nVal*sCoef));
 					if(f<0.0001)
 						f = 0.0001;
 					cptNew.push_back(f);
 				}
 			}
+			vector<double> cptOld = listIt->get_CPT();
+			for (int i = 0; i < cptNew.size(); i++){
+				abs_diff = abs_diff + abs( cptOld[i] - cptNew[i] );
+			}
 			listIt->set_CPT(cptNew);
 		}
+		return abs_diff;
 	}
 };
 
-network read_network()
+network read_network(string argv1)
 {
 	network Alarm_new;
 	string line;
 	int find=0;
-	ifstream myfile("alarm.bif"); 
+	ifstream myfile(argv1); 
 	string temp;
 	string name;
 	vector<string> values;
@@ -484,7 +490,7 @@ network read_network()
 				ss2>> temp;
 				ss2>> temp;
 				temp = temp.substr(1,temp.length()-2);
-				vector<float> curr_CPT;
+				vector<double> curr_CPT;
 				string::size_type sz;
 				while(temp.compare(";")!=0)
 				{
@@ -510,18 +516,22 @@ vector<vector<vector<string> > > records(values+1, v);
 // vector<vector<string> > records;
 network Alarm;
 
-int main()
+int main(int argc, char** argv)
 {
-	ios_base::sync_with_stdio(false);cin.tie(0);cout.tie(0);cout<< fixed << setprecision(4);
+	ios_base::sync_with_stdio(false);cin.tie(0);
+	// cout.tie(0);
+	// cout<< fixed << setprecision(4);
 	srand(time(0));
-	Alarm=read_network();
+	string argv1 = string(argv[1]);
+	string argv2 = string(argv[2]);
+	Alarm=read_network(argv1);
 	values = Alarm.netSize();
 
 	int count;
 	string temp;
 
 	//Reading records.dat
-	ifstream myfile("records.dat");
+	ifstream myfile(argv2);
 
 	if (myfile.is_open()){
 		while( !myfile.eof()){
@@ -550,21 +560,21 @@ int main()
 
 	//Initialisation of network
 	Alarm.initialise();
-	// Alarm.printNetwork();
-	// Alarm.printGraph();
 
     clock_t start;
     clock_t end;
-	float elapsed = 0;
+	double elapsed = 0;
 
 	int ct=0;
+	double diff = 10;
 
 	// Run till some condition is satisfied
-	while (elapsed < 60){
+	while (elapsed < 115){
+	// while (ct != 10){
 		//E-step
 		//Inference of each variable
         start = clock();
-		vector<float> probs(values,0);
+		vector<double> probs(values,0);
 		for (int i = 0; i < values; i++){
 			for (int j = 0; j < records[i].size(); j++){
 				records[i][j] = Alarm.fill(i,records[i][j]);
@@ -574,13 +584,18 @@ int main()
 
 		//M-step
 		//Use counting to get actual prob values
-		Alarm.updateCPT(records);
+		diff = Alarm.updateCPT(records);
+		// cout << diff << endl;
+
+		if (diff < 0.00005){
+			break;
+		}
 
 		// cout << "Done M-step" << endl;
 
 		end = clock();
 		start = end - start;
-        elapsed += (float)start/CLOCKS_PER_SEC;
+        elapsed += (double)start/CLOCKS_PER_SEC;
 		ct++;
 
 	}
@@ -619,7 +634,7 @@ int main()
 				ss >> temp;
 				ss >> temp;
 				temp = temp.substr(1,temp.length()-2);
-				vector<float> cpt = Alarm.get_nth_node(string_to_idx[temp]).get_CPT();
+				vector<double> cpt = Alarm.get_nth_node(string_to_idx[temp]).get_CPT();
 				outfile << "	table ";
 				for (int i = 0; i < cpt.size(); i++){
 					outfile << cpt[i] << " ";
@@ -632,8 +647,3 @@ int main()
 		}
 	}
 }
-
-
-
-
-
